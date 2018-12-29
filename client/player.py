@@ -1,37 +1,39 @@
 import subprocess
+import time
+from os import listdir
 
 class Player():
-    def __init__(self):
-      self.dirname = ""
-      self.filename = ""
+  def __init__(self):
+    self.dirname = ""
+    self.filename = ""
+
+  def setPath(self, path):
+    if path[-1] == "/":
+      self.dirname = path
+    else:
+      self.dirname = path + "/"
+  
+  def open(self, filename):
     
-    def Open(self, dirname, filename):
-      if dirname[-1] == "/":
-        self.dirname = dirname
-      else:
-        self.dirname = dirname + "/"
+    self.filename = filename
       
-      self.filename = filename
-        
-    def Play(self):
-      subprocess.Popen(["vlc", self.dirname + self.filename])
-        
-vlc = Player()
-vlc.Open("/home/renan/Documents/3ano/SO/Servidor/client", "my_concatenation.mkv")
-vlc.Play()
-
-# clip0 = VideoFileClip("HomemFormiga_00000.mkv")
-# clip1 = VideoFileClip("HomemFormiga_00001.mkv")
-# clip2 = VideoFileClip("HomemFormiga_00002.mkv")
-# clip3 = VideoFileClip("HomemFormiga_00003.mkv")
-# clip4 = VideoFileClip("HomemFormiga_00004.mkv")
-# clip5 = VideoFileClip("HomemFormiga_00005.mkv")
-# clip6 = VideoFileClip("HomemFormiga_00006.mkv")
-# clip7 = VideoFileClip("HomemFormiga_00007.mkv")
-# final_clip = concatenate_videoclips([clip1, clip2, clip3, clip4, clip5, clip6, clip7])
-# final_clip.write_videofile("my_concatenation.mkv")
+  def play(self):
+    subprocess.Popen(["vlc", self.dirname + self.filename, "--play-and-exit"])
+      
+  def listar_arquivos(self):
+    lista_arqs = [arq for arq in listdir(self.dirname)]
+    return lista_arqs
 
 
-# import subprocess
-
-# p = subprocess.Popen(["vlc","/home/renan/Documents/3ano/SO/Servidor/client/0.mp4"])
+if __name__ == '__main__':
+  # path = "/home/renan/Documents/3ano/SO/video-streaming/filme"
+  print("Insert the files path:")
+  path = input()
+  vlc = Player()
+  vlc.setPath(path)
+  movies = vlc.listar_arquivos()
+  
+  for movie in movies:
+    vlc.open(movie)
+    vlc.play()
+    time.sleep(3.5)
