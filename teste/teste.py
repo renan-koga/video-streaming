@@ -2,10 +2,11 @@ import socket
 import threading
 import sys
 import time, sys
-
+from canalTeste import *
 
 class Receptor(threading.Thread):
     def __init__(self):
+        self.canal = None
         threading.Thread.__init__(self)
 
     def run(self):
@@ -42,7 +43,7 @@ class Receptor(threading.Thread):
 
 
 # IP e porta do servidor
-TCP_HOST = '191.52.64.32'  # IP
+TCP_HOST = 'localhost'  # IP
 TCP_PORT = 6060  # porta
 BUFFER_SIZE = 1024  # Normally 1024
 qtd_max = int(input("Digite a quantidade de Usuários que poderão se conectar: "))
@@ -62,7 +63,7 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, recep):
         msg = input()
         # tcp.connect(dest)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
-            print(TCP_HOST)
+            # print(TCP_HOST)
             tcp.connect(dest)
 
             print("Enviado:", msg)
@@ -97,14 +98,30 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, recep):
                     print("Limite de canais conectados ao servidor excedidos.")
 
                     print("Digite o ip para se conectar a outro cliente: ")
-                    TCP_HOST = input()
-                    dest = (TCP_HOST, TCP_PORT)
+                    teste_ip = input()
 
-                    conecta(TCP_HOST,TCP_PORT,BUFFER_SIZE,dest,msg,recep)
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
+                        # print(TCP_HOST)
+                        tcp.connect(dest)
+                        dest2 = (teste_ip, 9092)
+
+                        tcp.send(bytes('teste', encoding='utf-8'))
+
+                    # Tenta criar um novo canal para transmitir os dados
+                    recep.canal = CanalThread(3, "../filme/")
+                    print("IP: ", teste_ip)
+                    recep.canal.add_cliente(teste_ip)
+                    recep.canal.start()
+                    # dest = (TCP_HOST, TCP_PORT)
+
+                    # conecta(TCP_HOST,TCP_PORT,BUFFER_SIZE,dest,msg,recep)
 
 
                 elif not recep.is_alive():
                     recep.start()
+
+                    recep.canal = CanalThread('192.168.1.108', qtd_max, 3, "../filme/")
+                    recep.canal.start()
 
             # lista de clientes conectados
             if msg[0:2] == '11':

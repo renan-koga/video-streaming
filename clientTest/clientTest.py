@@ -1,4 +1,5 @@
 import socket
+import socketserver
 import threading
 import sys
 import time, sys
@@ -11,10 +12,11 @@ class Receptor(threading.Thread):
     def run(self):
         self._stopped = False
 
+        socketserver.TCPServer.allow_reuse_address = True
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk_server:
             sk_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-            sk_server.bind(('', 9091))
+            sk_server.bind(('', 9092))
             sk_server.listen(1)
 
             file_num = 0
@@ -97,11 +99,19 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, recep):
                     print("Limite de canais conectados ao servidor excedidos.")
 
                     print("Digite o ip para se conectar a outro cliente: ")
-                    TCP_HOST = input()
-                    dest = (TCP_HOST, TCP_PORT)
+                    clientIp = input()
 
-                    conecta(TCP_HOST,TCP_PORT,BUFFER_SIZE,dest,msg,recep)
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
+                        tcp2.connect(clientIp, 9092)
+                        tcp2.send(bytes("teste", encoding='utf-8'))
+                        tcp2.close()
 
+                    recep.start()
+
+
+                    # dest = (TCP_HOST, TCP_PORT)
+
+                    # conecta(TCP_HOST,TCP_PORT,BUFFER_SIZE,dest,msg,recep)
 
                 elif not recep.is_alive():
                     recep.start()

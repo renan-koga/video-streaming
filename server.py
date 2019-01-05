@@ -11,7 +11,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
         ip_cliente = self.client_address[0]
 
-        # Adicionar pessoa no canal
+        # Adicionar pessoa no canal-
         if codigo == 10:
 
             # Procura o cliente em algum canal e retira ele caso tenha
