@@ -1,4 +1,5 @@
 # coding=utf-8
+import sys
 import threading
 import socketserver
 import socket as sk
@@ -13,12 +14,13 @@ PORTA_SAIDA = 9092
 MAX_CLIENTES_CANAL = 1
 lock = Lock()
 
-class ClientSender(threading.Thread):
-    def __init__(self, ip, cont, canal):
+class ClientServer(threading.Thread):
+    def __init__(self, client, path):
         threading.Thread.__init__(self)
-        self.ip = ip
-        self.maxConnections = cont
-        self.canal = canal
+        self.client = client
+        self.client_sender = ClientSender(client, path)
+        self.client_sender.start()
+        # self.canal = canal
 
     def run(self):
         socketserver.TCPServer.allow_reuse_address = True
@@ -33,14 +35,14 @@ class ClientSender(threading.Thread):
             # tcp.connect((self.ip, PORTA_SAIDA))
             tcp.listen(1)
 
-            while cont < self.maxConnections:
-                print("Aguardando conexão no IP: ", self.ip)
+            while cont < self.client.maxConnections:
+                print("Aguardando conexão...")
                 connection, address = tcp.accept()
 
                 try:
                     print("Conectado ", address)
                     lock.acquire()
-                    self.canal.add_cliente(address[0])
+                    self.client_sender.add_cliente(address[0])
                     lock.release()
                     while True:
                         msg = connection.recv(BUFFER_SIZE)
@@ -54,20 +56,18 @@ class ClientSender(threading.Thread):
                     tcp.close()
 
 
-class CanalThread(threading.Thread):
-    def __init__(self, ip, maxConnection, canal_id, path):
+class ClientSender(threading.Thread):
+    def __init__(self, client, path):
         threading.Thread.__init__(self)
+        self.client = client
 
-        self.ip = ip
-        self.sk_client = None
-        self.client_send = None
-        self.maxConnection = maxConnection
+        # self.client_send = ClientSender(self.client, self)
+        # self.client_send.start()
+        # self.maxConnection = maxConnection
 
-        self.currentVideo = None
-        self.currentFileNum = -1
+        self.sendVideo = None
 
         self.clients     = []
-        self.canal_id    = canal_id
         self.path        = path
         self.curr_file   = 0
         self.total_files = len(listdir(self.path))
@@ -78,21 +78,21 @@ class CanalThread(threading.Thread):
         # print("[+] Nova thread iniciada para o canal {}".format(self.canal_id))
     
     def run(self):
-        self.client_send = ClientSender(self.ip, self.maxConnection, self)
-        self.client_send.start()
-        
+
         while True:
             tempo_inicial = time.time()
 
+            # Get the current video name
             lock.acquire()
+            curr_video_name = self.client.get_current_video()
+            lock.release()
+
             for _, cliente in enumerate(self.clients):
-                print("[*] Enviando canal {0} (arquivo {1}) para o cliente {2}.".format(
-                    self.canal_id,
-                    self.curr_file,
+                print("[*] Enviando (arquivo {0}) para o cliente {1}.".format(
+                    curr_video_name,
                     cliente
                 ))
-                self.enviar_video(cliente)
-            lock.release()
+                self.enviar_video(cliente, curr_video_name)
 
             tempo_final  = time.time()
             delta_tempo  = tempo_final - tempo_inicial
@@ -125,7 +125,7 @@ class CanalThread(threading.Thread):
         #     tcp.send(bytes(msg, encoding='utf-8'))
 
         self.clients.append(ip)
-        print("{} inserido no canal {}".format(ip, self.canal_id))
+        print("{} inserido no canal".format(ip))
 
     def remove_cliente(self, ip):
         if ip in self.clients:
@@ -137,19 +137,50 @@ class CanalThread(threading.Thread):
     def get_num_clients(self):
         return len(self.clients)
 
-    def enviar_video(self, cliente):
+
+    def enviar_video(self, cliente, curr_video_name):
         socketserver.TCPServer.allow_reuse_address = True
         with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as sk_client:
             sk_client.connect((cliente, 9092))
-            nome_arq = self.path + "{}_{}.mkv".format(self.nome_base, format(self.curr_file, '05d'))
 
-            print(nome_arq)
+            curr_file_num = curr_video_name.split('.')[0]
+
+            # Send the current video number
+            sk_client.send(bytes(curr_file_num, encoding='utf-8'))
 
             # Envia o arquivo
+            nome_arq = self.path + curr_video_name
+            print(nome_arq)
             with open(nome_arq, 'rb') as up_file:
                 send_read = up_file.read(BUFFER_SIZE)
                 while send_read:
                     sk_client.send(send_read)
                     send_read = up_file.read(BUFFER_SIZE)
+
+class SendVideo(threading.Thread):
+    def __init__(self, client, client_ip):
+        threading.Thread.__init__(self)
+        self.client = client
+        self.clientIp = client_ip
+
+    def run(self):
+        socketserver.TCPServer.allow_reuse_address = True
+        with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as sk_client:
+            sk_client.connect((self.clientIp, 9092))
+            # nome_arq = self.path + "{}_{}.mkv".format(self.nome_base, format(self.curr_file, '05d'))
+            #
+            # print(nome_arq)
+
+            # teste = str(self.curr_file)
+
+            # sk_client.send(bytes(teste, encoding='utf-8'))
+
+            # lock.acquire()
+            send_read = self.client.get_current_video()
+            # lock.release()
+            while send_read:
+                sk_client.send(send_read)
+                # lock.acquire()
+                send_read = self.client.get_current_video()
 
 # End class

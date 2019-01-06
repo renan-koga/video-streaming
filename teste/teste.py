@@ -120,7 +120,7 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, recep):
                 elif not recep.is_alive():
                     recep.start()
 
-                    recep.canal = CanalThread('192.168.1.108', qtd_max, 3, "../filme/")
+                    recep.canal = CanalThread(qtd_max, 3, "../filme/")
                     recep.canal.start()
 
             # lista de clientes conectados
