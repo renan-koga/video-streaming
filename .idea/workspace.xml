@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d0c139d3-925b-4c7f-8264-c7735fe75884" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/client/playerDu.py" beforeDir="false" afterPath="$PROJECT_DIR$/client/playerDu.py" afterDir="false" />
-    </list>
+    <list default="true" id="d0c139d3-925b-4c7f-8264-c7735fe75884" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +107,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="y" value="-1" />
     <option name="width" value="1366" />
     <option name="height" value="741" />
@@ -268,15 +266,15 @@
       <workItem from="1546783861467" duration="11467000" />
       <workItem from="1546819760291" duration="2619000" />
       <workItem from="1546822684324" duration="3564000" />
-      <workItem from="1546861793767" duration="1390000" />
+      <workItem from="1546861793767" duration="1996000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="73472000" />
+    <option name="totallyTimeSpent" value="74078000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="-1" width="1366" height="741" extended-state="6" />
+    <frame x="0" y="-1" width="1366" height="741" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2159091" />
