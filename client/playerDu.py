@@ -26,5 +26,6 @@ if __name__ == '__main__':
 
     # for song in playlist:
     # pl = vlc.Instance("")
-    player = vlc.MediaPlayer("./0.mkv")
-    player.play()
+    Instance = vlc.Instance()
+    # player = vlc.MediaPlayer("./0.mkv")
+    # player.play()
