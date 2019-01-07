@@ -55,7 +55,8 @@ class ClientServer(threading.Thread):
                         # msg = "teste"
                         # tcp.send(bytes(msg, encoding='utf-8'))
                 finally:
-                    tcp.close()
+                    print("OI")
+                    # tcp.close()
 
 
 

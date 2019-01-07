@@ -1,6 +1,8 @@
 import socket
 import socketserver
 import threading
+import vlc
+import glob, os
 import sys
 import time, sys
 from canalTeste import *
@@ -60,6 +62,9 @@ class ServerReceiver(threading.Thread):
 						recv_read = content.recv(BUFFER_SIZE)
 
 				self.client.set_current_video(nome)
+				print(client.currentVideo)
+
+				# time.sleep(2)
 				content.close()
 				file_num += 1
 
@@ -111,6 +116,47 @@ class ClientReceiver(threading.Thread):
 
 	def stop(self):
 		self._stopped = True
+
+
+class Player():
+	def __init__(self, path):
+		self.vlc_instance = vlc.Instance('--quiet')
+		self.player = self.vlc_instance.media_player_new()
+		self.path = path
+		self.vetor = []
+
+	def listMovies(self):
+		os.chdir("./")
+		for file in glob.glob("*.mkv"):
+			self.vetor.append(file)
+		return self.vetor
+
+	def play(self, file):
+		# file = nome do arquivo. ex: '_000040.mkv'''
+		media = self.vlc_instance.media_new(self.path + file)
+		self.player.set_media(media)
+		self.player.play()
+
+
+class ExibeVideos(threading.Thread):
+	def __init__(self, client):
+		threading.Thread.__init__(self)
+		Player.__init__(self, "./")
+		self.client = client
+
+	def run(self):
+		while True:
+			# player = Player('./')
+			if self.client.currentVideo is not None:
+				nomeMovie = self.client.currentVideo
+				Player.play(self, nomeMovie)
+				time.sleep(2)
+				os.remove('./'+nomeMovie)
+			# lista = player.listMovies()
+			# for file in lista:
+
+
+
 
 
 # IP e porta do servidor
@@ -266,6 +312,11 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 
 					clientServer = ClientServer(client, "./")
 					clientServer.start()
+					# print(client.currentVideo)
+					# x = ExibeVideos(client)
+					# x.start()
+					x = ExibeVideos(client)
+					x.start()
 
 			# lista de clientes conectados
 			if msg[0:2] == '11':

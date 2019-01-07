@@ -1,3 +1,4 @@
 *.mp4
 *.mkv
 .idea/
+.idea/workspace.xml
