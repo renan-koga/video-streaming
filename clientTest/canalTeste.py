@@ -32,7 +32,7 @@ class ClientServer(threading.Thread):
         with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
             tcp.setsockopt(sk.SOL_SOCKET, sk.SO_REUSEADDR, 1)
 
-            origin = ('', PORTA_SAIDA)
+            origin = ('', 9095)
             tcp.bind(origin)
             # tcp.connect((self.ip, PORTA_SAIDA))
             tcp.listen(1)
@@ -55,7 +55,8 @@ class ClientServer(threading.Thread):
                         # msg = "teste"
                         # tcp.send(bytes(msg, encoding='utf-8'))
                 finally:
-                    tcp.close()
+                    print("OI")
+                    # tcp.close()
 
 
 
@@ -66,7 +67,7 @@ class HandleConnections(threading.Thread):
 
     def run(self):
         socketserver.TCPServer.allow_reuse_address = True
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
+        with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
             origin = ('', 9093)
             tcp.bind(origin)
             tcp.listen(1)
