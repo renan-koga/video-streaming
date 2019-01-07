@@ -25,14 +25,14 @@ class ClientServer(threading.Thread):
         # self.canal = canal
 
     def run(self):
-        socketserver.TCPServer.allow_reuse_address = True
         logic = True
         cont = 0
         # while True:
+        socketserver.TCPServer.allow_reuse_address = True
         with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
             tcp.setsockopt(sk.SOL_SOCKET, sk.SO_REUSEADDR, 1)
 
-            origin = ('', PORTA_SAIDA)
+            origin = ('', 9095)
             tcp.bind(origin)
             # tcp.connect((self.ip, PORTA_SAIDA))
             tcp.listen(1)
@@ -66,7 +66,7 @@ class HandleConnections(threading.Thread):
 
     def run(self):
         socketserver.TCPServer.allow_reuse_address = True
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
+        with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
             origin = ('', 9093)
             tcp.bind(origin)
             tcp.listen(1)
@@ -74,6 +74,7 @@ class HandleConnections(threading.Thread):
             while True:
                 print("Aguardando conexão teste...")
                 connection, address = tcp.accept()
+                print("Aceitado conexão teste")
                 msg = "NO"
 
                 if self.client.connected >= self.client.maxConnections:

@@ -114,7 +114,7 @@ class ClientReceiver(threading.Thread):
 
 
 # IP e porta do servidor
-TCP_HOST = 'localhost'  # IP
+TCP_HOST = '191.52.64.32'  # IP
 TCP_PORT = 6060  # porta
 BUFFER_SIZE = 1024  # Normally 1024
 qtd_max = int(input("Digite a quantidade de Usuários que poderão se conectar: "))
@@ -180,43 +180,63 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 
 					with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
 						tcp2.connect((TCP_HOST, 6060))
-						teste = "13" + msg[-1]
+						teste = "11" + msg[-1]
 						tcp2.send(bytes(teste, encoding='utf-8'))
 
 						clients_ip = str(tcp2.recv(BUFFER_SIZE), 'utf-8')
-						print(clients_ip)
-
-						client_ip = None
-						for ip in clients_ip:
-							with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
-								tcp3.connect((ip, 9092))
-								# tcp3.send(bytes("teste", encoding='utf-8'))
-								resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
-								if resp == "OK":
-									client_ip = ip
-									break
-
-								tcp3.close()
-
-						if client_ip is None:
-							client_ip = get_available_client(clients_ip)
-						# 	for ip in clients_ip:
-						# 		tcp3.connect((ip, 9092))
-						# 		tcp3.send(bytes("13", encoding='utf-8'))
-						# 		resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
-
-						# client_ip = get_available_client(clients_ip)
+						# print("==================", clients_ip)
+						clients_ip = handle_ip_list(clients_ip)
+						# print(">>>>>>>>>>>>", teste)
 
 
+					# client_ip = '191.52.64.32'
+					# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
+					# 	# print("IP TENTANDO CONECTAR: ", ip)
+					# 	tcp3.connect((client_ip, 9093))
+					# 	# tcp3.send(bytes("teste", encoding='utf-8'))
+					# 	resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
+					# 	if resp == "OK":
+					# 		client_ip = ip
+					# 		break
+					#
+					# 	tcp3.close()
 
-						# return
+					client_ip = '191.52.64.32'
+					# client_ip = str(client_ip)
+					socketserver.TCPServer.allow_reuse_address = True
+					# print("TAM: ", sys.getsizeof(client_ip))
+					for ip in clients_ip:
+						with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
+							# print("IP TENTANDO CONECTAR: ", sys.getsizeof(teste[0]))
+							tcp3.connect((ip, 9093))
+							# tcp3.send(bytes("teste", encoding='utf-8'))
+							resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
+							if resp == "OK":
+								client_ip = ip
+								break
 
-						with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
-							print("CLIENTE IP: ", client_ip)
-							# destiny = (client_ip, 9092)
-							tcp2.connect((client_ip, 9092))
-							tcp2.sendall(bytes("teste", encoding='utf-8'))
-							tcp2.close()
+							# tcp3.close()
+
+					# if client_ip is None:
+					# 	client_ip = get_available_client(clients_ip)
+					# 	for ip in clients_ip:
+					# 		tcp3.connect((ip, 9092))
+					# 		tcp3.send(bytes("13", encoding='utf-8'))
+					# 		resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
+
+					# client_ip = get_available_client(clients_ip)
+
+
+
+					# return
+
+					socketserver.TCPServer.allow_reuse_address = True
+					with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
+						print("CLIENTE IP: ", client_ip)
+						# destiny = (client_ip, 9092)
+						tcp2.connect((client_ip, 9095))
+						tcp2.sendall(bytes("teste", encoding='utf-8'))
+						tcp2.close()
 
 					client.set_sender_ip(client_ip)
 					clientReceiver.start()
@@ -257,8 +277,36 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 
 			tcp.shutdown(socket.SHUT_RDWR)
 
+# def handle_ip_list(ip_list):
+# 	ips1 = ip_list.split('[')[-1]
+# 	ips2 = ips1.split(']')[0]
+# 	ips = ips2.split(',')
+#
+# 	teste = []
+#
+# 	for ip in ips:
+# 		teste.append(ip)
+#
+# 	return teste
 
-conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client)
+def handle_ip_list(ip_list):
+	cont = len(ip_list)
+	i = 0
+	teste = ''
+	ips = []
+	while i < cont:
+		if ip_list[i] == ',' or ip_list[i] == ']':
+			# print(">>>", teste)
+			ips.append(teste)
+			teste = ''
+
+		else:
+			if ip_list[i] != ' ' and ip_list[i] != '[' and ip_list[i] != "'":
+				teste += ip_list[i]
+
+		i += 1
+
+	return ips
 
 def get_available_client(clients_ip):
 	for ip in clients_ip:
@@ -279,3 +327,7 @@ def is_available(ip):
 
 		else:
 			return False
+
+
+conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client)
+
