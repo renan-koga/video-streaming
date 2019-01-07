@@ -14,6 +14,7 @@ class Client:
 		# self.clientServer = None
 		self.sender_ip = None
 		self.clients = []
+		self.connected = 0
 		self.maxConnections = max_connections
 		self.currentVideo = None
 
@@ -174,15 +175,48 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 					# AQUI É ONDE O CLIENTE PROCURA OUTRO CLIENTE PARA RECEBER OS ARQUIVOS
 					print("Limite de canais conectados ao servidor excedidos.")
 
-					print("Digite o ip para se conectar a outro cliente: ")
-					client_ip = input()
+					# print("Digite o ip para se conectar a outro cliente: ")
+					# client_ip = input()
 
 					with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
-						print("CLIENTE IP: ", client_ip)
-						# destiny = (client_ip, 9092)
-						tcp2.connect((client_ip, 9092))
-						tcp2.sendall(bytes("teste", encoding='utf-8'))
-						tcp2.close()
+						tcp2.connect((TCP_HOST, 6060))
+						teste = "13" + msg[-1]
+						tcp2.send(bytes(teste, encoding='utf-8'))
+
+						clients_ip = str(tcp2.recv(BUFFER_SIZE), 'utf-8')
+						print(clients_ip)
+
+						client_ip = None
+						for ip in clients_ip:
+							with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
+								tcp3.connect((ip, 9092))
+								# tcp3.send(bytes("teste", encoding='utf-8'))
+								resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
+								if resp == "OK":
+									client_ip = ip
+									break
+
+								tcp3.close()
+
+						if client_ip is None:
+							client_ip = get_available_client(clients_ip)
+						# 	for ip in clients_ip:
+						# 		tcp3.connect((ip, 9092))
+						# 		tcp3.send(bytes("13", encoding='utf-8'))
+						# 		resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
+
+						# client_ip = get_available_client(clients_ip)
+
+
+
+						# return
+
+						with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
+							print("CLIENTE IP: ", client_ip)
+							# destiny = (client_ip, 9092)
+							tcp2.connect((client_ip, 9092))
+							tcp2.sendall(bytes("teste", encoding='utf-8'))
+							tcp2.close()
 
 					client.set_sender_ip(client_ip)
 					clientReceiver.start()
@@ -225,3 +259,23 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 
 
 conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client)
+
+def get_available_client(clients_ip):
+	for ip in clients_ip:
+		if is_available(ip):
+			return ip
+
+	for ip in clients_ip:
+		get_available_client(ip)
+
+def is_available(ip):
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
+		tcp.connect((ip, 9093))
+		msg = str(tcp.recv(BUFFER_SIZE), 'utf-8')
+		tcp.close()
+
+		if msg == "OK":
+			return True
+
+		else:
+			return False
