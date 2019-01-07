@@ -20,6 +20,8 @@ class ClientServer(threading.Thread):
         self.client = client
         self.client_sender = ClientSender(client, path)
         self.client_sender.start()
+        self.handle_connections = HandleConnections(client)
+        self.handle_connections.start()
         # self.canal = canal
 
     def run(self):
@@ -35,7 +37,7 @@ class ClientServer(threading.Thread):
             # tcp.connect((self.ip, PORTA_SAIDA))
             tcp.listen(1)
 
-            while cont < self.client.maxConnections:
+            while True:
                 print("Aguardando conexão...")
                 connection, address = tcp.accept()
 
@@ -55,6 +57,29 @@ class ClientServer(threading.Thread):
                 finally:
                     tcp.close()
 
+
+
+class HandleConnections(threading.Thread):
+    def __init__(self, client):
+        threading.Thread.__init__(self)
+        self.client = client
+
+    def run(self):
+        socketserver.TCPServer.allow_reuse_address = True
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
+            origin = ('', 9093)
+            tcp.bind(origin)
+            tcp.listen(1)
+
+            while True:
+                print("Aguardando conexão teste...")
+                connection, address = tcp.accept()
+                msg = "NO"
+
+                if self.client.connected >= self.client.maxConnections:
+                    msg = "OK"
+
+                connection.send(bytes(msg, encoding='utf-8'))
 
 class ClientSender(threading.Thread):
     def __init__(self, client, path):
