@@ -42,9 +42,9 @@ class ClientServer(threading.Thread):
 
                 try:
                     print("Conectado ", address)
-                    lock.acquire()
+                    # lock.acquire()
                     self.client_sender.add_cliente(address[0])
-                    lock.release()
+                    # lock.release()
                     while True:
                         msg = connection.recv(BUFFER_SIZE)
                         print(str(msg, 'utf-8'))
@@ -93,6 +93,8 @@ class ClientSender(threading.Thread):
 
         self.sendVideo = None
 
+        # self.clients = []
+
         self.path = path
         self.curr_file = 0
         self.total_files = len(listdir(self.path))
@@ -108,16 +110,16 @@ class ClientSender(threading.Thread):
             tempo_inicial = time.time()
 
             # Get the current video name
-            lock.acquire()
+            # lock.acquire()
             curr_video_name = self.client.get_current_video()
-            lock.release()
+            # lock.release()
 
-            for _, cliente in enumerate(self.clients):
-                print("[*] Enviando (arquivo {0}) para o cliente {1}.".format(
-                    curr_video_name,
-                    cliente
-                ))
-                self.enviar_video(cliente, curr_video_name)
+            # for _, cliente in enumerate(self.clients):
+            #     print("[*] Enviando (arquivo {0}) para o cliente {1}.".format(
+            #         curr_video_name,
+            #         cliente
+            #     ))
+            #     self.enviar_video(cliente, curr_video_name)
 
             tempo_final  = time.time()
             delta_tempo  = tempo_final - tempo_inicial

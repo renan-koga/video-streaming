@@ -2,9 +2,12 @@ import socket
 import socketserver
 import threading
 import vlc
-import glob, os
+import glob
+import os
 import sys
-import time, sys
+import time
+import sys
+from threading import Lock
 from canalTeste import *
 
 lock = Lock()
@@ -61,9 +64,9 @@ class ServerReceiver(threading.Thread):
 						down_file.write(recv_read)
 						recv_read = content.recv(BUFFER_SIZE)
 
-				lock.acquire()
+				# lock.acquire()
 				self.client.set_current_video(nome)
-				lock.release()
+				# lock.release()
 				print(client.currentVideo)
 
 				# time.sleep(2)
@@ -96,14 +99,14 @@ class ClientReceiver(threading.Thread):
 			while not self._stopped:
 				content, address = sk_server.accept()
 
-				curr_file = str(content.recv(BUFFER_SIZE), 'utf-8')
+				# nome = content.recv(BUFFER_SIZE).decode('utf-8')
 
 				# Recebe o nome do arquivo
-				nome = "{}.mkv".format(curr_file)
+				nome = "{}.mkv".format(file_num)
 				sys.stdout.write("Recebendo '{}' de {}.\n".format(nome, address[0]))
 				sys.stdout.flush()
 
-				print("ARQUIVO ATUAL: ", curr_file)
+				print("ARQUIVO ATUAL: ", nome)
 
 				# Recebe o arquivo
 				with open(nome, 'wb') as down_file:
@@ -112,11 +115,11 @@ class ClientReceiver(threading.Thread):
 						down_file.write(recv_read)
 						recv_read = content.recv(BUFFER_SIZE)
 
-				lock.acquire()
+				# file_num += 1
+				# lock.acquire()
 				self.client.set_current_video(nome)
-				lock.release()
-				content.close()
-				file_num += 1
+				# lock.release()
+				# content.close()
 
 	def stop(self):
 		self._stopped = True
@@ -155,12 +158,12 @@ class ExibeVideos(threading.Thread):
 				nomeMovie = self.client.currentVideo
 				Player.play(self, nomeMovie)
 				time.sleep(2)
-				os.remove('./'+nomeMovie)
+				# os.remove('./'+nomeMovie)
 			# lista = player.listMovies()
 			# for file in lista:
 
 # IP e porta do servidor
-TCP_HOST = '191.52.64.46'  # IP
+TCP_HOST = '191.52.76.36'  # IP
 TCP_PORT = 6060  # porta
 BUFFER_SIZE = 1024  # Normally 1024
 qtd_max = int(input("Digite a quantidade de Usuários que poderão se conectar: "))
@@ -275,6 +278,10 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 
 					clientServer = ClientServer(client, "./")
 					clientServer.start()
+
+					x = ExibeVideos(client)
+					x.start()
+
 
 					while True:
 						msg = input()
