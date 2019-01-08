@@ -160,7 +160,7 @@ class ExibeVideos(threading.Thread):
 
 
 # IP e porta do servidor
-TCP_HOST = '191.52.64.32'  # IP
+TCP_HOST = '191.52.64.46'  # IP
 TCP_PORT = 6060  # porta
 BUFFER_SIZE = 1024  # Normally 1024
 qtd_max = int(input("Digite a quantidade de Usuários que poderão se conectar: "))
@@ -230,9 +230,7 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 						tcp2.send(bytes(teste, encoding='utf-8'))
 
 						clients_ip = str(tcp2.recv(BUFFER_SIZE), 'utf-8')
-						# print("==================", clients_ip)
 						clients_ip = handle_ip_list(clients_ip)
-						# print(">>>>>>>>>>>>", teste)
 
 
 					# client_ip = '191.52.64.32'
@@ -247,32 +245,23 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 					#
 					# 	tcp3.close()
 
-					client_ip = '191.52.64.32'
+					# client_ip = '191.52.64.32'
 					# client_ip = str(client_ip)
 					socketserver.TCPServer.allow_reuse_address = True
-					# print("TAM: ", sys.getsizeof(client_ip))
 					for ip in clients_ip:
 						with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
-							# print("IP TENTANDO CONECTAR: ", sys.getsizeof(teste[0]))
+							print("IP TENTANDO CONECTAR: ", ip)
 							tcp3.connect((ip, 9093))
-							# tcp3.send(bytes("teste", encoding='utf-8'))
 							resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
+							# print("RESPOSTA: ", resp)
 							if resp == "OK":
+								print("DEU BOM!")
 								client_ip = ip
 								break
 
 							# tcp3.close()
 
-					# if client_ip is None:
-					# 	client_ip = get_available_client(clients_ip)
-					# 	for ip in clients_ip:
-					# 		tcp3.connect((ip, 9092))
-					# 		tcp3.send(bytes("13", encoding='utf-8'))
-					# 		resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
-
-					# client_ip = get_available_client(clients_ip)
-
-
+					client_ip = get_available_client(clients_ip)
 
 					# return
 

@@ -1,4 +1,6 @@
 *.mp4
 *.mkv
+*.xml
 .idea/
 .idea/workspace.xml
+venv/*

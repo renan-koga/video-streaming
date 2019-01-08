@@ -78,7 +78,7 @@ class HandleConnections(threading.Thread):
                 print("Aceitado conexão teste")
                 msg = "NO"
 
-                if self.client.connected >= self.client.maxConnections:
+                if self.client.connected < self.client.maxConnections:
                     msg = "OK"
 
                 connection.send(bytes(msg, encoding='utf-8'))
