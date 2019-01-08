@@ -1,6 +1,7 @@
 *.mp4
 *.mkv
 *.xml
+*.json
 .idea/
 .idea/workspace.xml
 venv/*

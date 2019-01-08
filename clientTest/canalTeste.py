@@ -26,7 +26,6 @@ class ClientServer(threading.Thread):
 
     def run(self):
         logic = True
-        cont = 0
         # while True:
         socketserver.TCPServer.allow_reuse_address = True
         with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
@@ -50,14 +49,13 @@ class ClientServer(threading.Thread):
                         msg = connection.recv(BUFFER_SIZE)
                         print(str(msg, 'utf-8'))
                         if not msg:
-                            cont+=1
+                            self.client.connected += 1
                             break
                         # msg = "teste"
                         # tcp.send(bytes(msg, encoding='utf-8'))
                 finally:
                     print("OI")
                     # tcp.close()
-
 
 
 class HandleConnections(threading.Thread):
@@ -83,6 +81,7 @@ class HandleConnections(threading.Thread):
 
                 connection.send(bytes(msg, encoding='utf-8'))
 
+
 class ClientSender(threading.Thread):
     def __init__(self, client, path):
         threading.Thread.__init__(self)
@@ -94,12 +93,11 @@ class ClientSender(threading.Thread):
 
         self.sendVideo = None
 
-        self.clients     = []
-        self.path        = path
-        self.curr_file   = 0
+        self.path = path
+        self.curr_file = 0
         self.total_files = len(listdir(self.path))
 
-        self.nome_base   = listdir(self.path)[0].split('_')[0]
+        self.nome_base = listdir(self.path)[0].split('_')[0]
 
         print("Thread teste iniciada")
         # print("[+] Nova thread iniciada para o canal {}".format(self.canal_id))
@@ -164,7 +162,6 @@ class ClientSender(threading.Thread):
     def get_num_clients(self):
         return len(self.clients)
 
-
     def enviar_video(self, cliente, curr_video_name):
         socketserver.TCPServer.allow_reuse_address = True
         with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as sk_client:
@@ -183,31 +180,5 @@ class ClientSender(threading.Thread):
                 while send_read:
                     sk_client.send(send_read)
                     send_read = up_file.read(BUFFER_SIZE)
-
-class SendVideo(threading.Thread):
-    def __init__(self, client, client_ip):
-        threading.Thread.__init__(self)
-        self.client = client
-        self.clientIp = client_ip
-
-    def run(self):
-        socketserver.TCPServer.allow_reuse_address = True
-        with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as sk_client:
-            sk_client.connect((self.clientIp, 9092))
-            # nome_arq = self.path + "{}_{}.mkv".format(self.nome_base, format(self.curr_file, '05d'))
-            #
-            # print(nome_arq)
-
-            # teste = str(self.curr_file)
-
-            # sk_client.send(bytes(teste, encoding='utf-8'))
-
-            # lock.acquire()
-            send_read = self.client.get_current_video()
-            # lock.release()
-            while send_read:
-                sk_client.send(send_read)
-                # lock.acquire()
-                send_read = self.client.get_current_video()
 
 # End class

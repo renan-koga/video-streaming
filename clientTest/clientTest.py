@@ -29,7 +29,7 @@ class Client:
 	def get_current_video(self):
 		return self.currentVideo
 
-#Receive data from server
+# Receive data from server
 class ServerReceiver(threading.Thread):
 	def __init__(self, client):
 		threading.Thread.__init__(self)
@@ -61,7 +61,9 @@ class ServerReceiver(threading.Thread):
 						down_file.write(recv_read)
 						recv_read = content.recv(BUFFER_SIZE)
 
+				lock.acquire()
 				self.client.set_current_video(nome)
+				lock.release()
 				print(client.currentVideo)
 
 				# time.sleep(2)
@@ -110,7 +112,9 @@ class ClientReceiver(threading.Thread):
 						down_file.write(recv_read)
 						recv_read = content.recv(BUFFER_SIZE)
 
+				lock.acquire()
 				self.client.set_current_video(nome)
+				lock.release()
 				content.close()
 				file_num += 1
 
@@ -155,10 +159,6 @@ class ExibeVideos(threading.Thread):
 			# lista = player.listMovies()
 			# for file in lista:
 
-
-
-
-
 # IP e porta do servidor
 TCP_HOST = '191.52.64.46'  # IP
 TCP_PORT = 6060  # porta
@@ -172,11 +172,8 @@ msg = None
 client = Client(qtd_max)
 serverReceiver = ServerReceiver(client)
 clientReceiver = ClientReceiver(client)
-# recep = Receptor()
-
 
 # recep.daemon = True
-
 
 def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 	while True:
@@ -232,7 +229,6 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 						clients_ip = str(tcp2.recv(BUFFER_SIZE), 'utf-8')
 						clients_ip = handle_ip_list(clients_ip)
 
-
 					# client_ip = '191.52.64.32'
 					# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
 					# 	# print("IP TENTANDO CONECTAR: ", ip)
@@ -245,7 +241,7 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 					#
 					# 	tcp3.close()
 
-					# client_ip = '191.52.64.32'
+					client_ip = None
 					# client_ip = str(client_ip)
 					socketserver.TCPServer.allow_reuse_address = True
 					for ip in clients_ip:
@@ -259,9 +255,10 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 								client_ip = ip
 								break
 
-							# tcp3.close()
+							tcp3.close()
 
-					client_ip = get_available_client(clients_ip)
+					if client_ip is None:
+						client_ip = get_available_client(clients_ip)
 
 					# return
 
