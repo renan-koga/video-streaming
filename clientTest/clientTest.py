@@ -2,12 +2,14 @@ import socket
 import socketserver
 import threading
 import vlc
-import glob, os
+import glob
+import os
 import sys
-import time, sys
+import time
+# from threading import Lock
 from canalTeste import *
 
-lock = Lock()
+# lock = Lock()
 
 class Client:
 	def __init__(self, max_connections):
@@ -61,14 +63,31 @@ class ServerReceiver(threading.Thread):
 						down_file.write(recv_read)
 						recv_read = content.recv(BUFFER_SIZE)
 
-				lock.acquire()
+				print(">>>> ", len(self.client.clients))
+				for _, cliente in enumerate(self.client.clients):
+					print("[*] Enviando (arquivo {0}) para o cliente {1}.".format(
+						nome,
+						cliente
+					))
+					with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk_client:
+						sk_client.connect((cliente, 9092))
+
+						# sk_client.send(bytes(nome1))
+
+						with open(nome, 'rb') as up_file:
+							send_read = up_file.read(BUFFER_SIZE)
+							while send_read:
+								sk_client.send(send_read)
+								send_read = up_file.read(BUFFER_SIZE)
+
+				# lock.acquire()
 				self.client.set_current_video(nome)
-				lock.release()
+				# lock.release()
 				print(client.currentVideo)
 
 				# time.sleep(2)
 				content.close()
-				file_num += 1
+				# file_num += 1
 
 	def stop(self):
 		self._stopped = True
@@ -112,9 +131,9 @@ class ClientReceiver(threading.Thread):
 						down_file.write(recv_read)
 						recv_read = content.recv(BUFFER_SIZE)
 
-				lock.acquire()
+				# lock.acquire()
 				self.client.set_current_video(nome)
-				lock.release()
+				# lock.release()
 				content.close()
 				file_num += 1
 
@@ -155,12 +174,12 @@ class ExibeVideos(threading.Thread):
 				nomeMovie = self.client.currentVideo
 				Player.play(self, nomeMovie)
 				time.sleep(2)
-				os.remove('./'+nomeMovie)
+				# os.remove('./'+nomeMovie)
 			# lista = player.listMovies()
 			# for file in lista:
 
 # IP e porta do servidor
-TCP_HOST = '191.52.64.46'  # IP
+TCP_HOST = '191.52.76.36'  # IP
 TCP_PORT = 6060  # porta
 BUFFER_SIZE = 1024  # Normally 1024
 qtd_max = int(input("Digite a quantidade de Usuários que poderão se conectar: "))
@@ -276,6 +295,7 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 					clientServer = ClientServer(client, "./")
 					clientServer.start()
 
+
 					while True:
 						msg = input()
 
@@ -299,10 +319,10 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 					clientServer = ClientServer(client, "./")
 					clientServer.start()
 					# print(client.currentVideo)
-					# x = ExibeVideos(client)
-					# x.start()
 					x = ExibeVideos(client)
 					x.start()
+					# x = ExibeVideos(client)
+					# x.start()
 
 			# lista de clientes conectados
 			if msg[0:2] == '11':

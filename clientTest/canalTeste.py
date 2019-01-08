@@ -5,14 +5,14 @@ import socketserver
 import socket as sk
 import time
 from os import listdir
-from threading import Lock, Thread
+# from threading import Lock, Thread
 
 WAIT_TIME   = 1.8
 BUFFER_SIZE = 1024
 PORTA_SAIDA = 9092
 
 MAX_CLIENTES_CANAL = 1
-lock = Lock()
+# lock = Lock()
 
 class ClientServer(threading.Thread):
     def __init__(self, client, path):
@@ -42,9 +42,9 @@ class ClientServer(threading.Thread):
 
                 try:
                     print("Conectado ", address)
-                    lock.acquire()
+                    # lock.acquire()
                     self.client_sender.add_cliente(address[0])
-                    lock.release()
+                    # lock.release()
                     while True:
                         msg = connection.recv(BUFFER_SIZE)
                         print(str(msg, 'utf-8'))
@@ -92,7 +92,7 @@ class ClientSender(threading.Thread):
         # self.maxConnection = maxConnection
 
         self.sendVideo = None
-
+        # self.clients = []
         self.path = path
         self.curr_file = 0
         self.total_files = len(listdir(self.path))
@@ -108,16 +108,16 @@ class ClientSender(threading.Thread):
             tempo_inicial = time.time()
 
             # Get the current video name
-            lock.acquire()
+            # lock.acquire()
             curr_video_name = self.client.get_current_video()
-            lock.release()
+            # lock.release()
 
-            for _, cliente in enumerate(self.clients):
-                print("[*] Enviando (arquivo {0}) para o cliente {1}.".format(
-                    curr_video_name,
-                    cliente
-                ))
-                self.enviar_video(cliente, curr_video_name)
+            # for _, cliente in enumerate(self.clients):
+            #     print("[*] Enviando (arquivo {0}) para o cliente {1}.".format(
+            #         curr_video_name,
+            #         cliente
+            #     ))
+            #     self.enviar_video(cliente, curr_video_name)
 
             tempo_final  = time.time()
             delta_tempo  = tempo_final - tempo_inicial
@@ -136,7 +136,7 @@ class ClientSender(threading.Thread):
         
         # Se o canal ultrapassar o limite maximo de pessoas conectadas
         # Envia "00"
-        if len(self.clients) >= MAX_CLIENTES_CANAL:
+        if len(self.client.clients) >= MAX_CLIENTES_CANAL:
             with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
                 tcp.connect((ip, PORTA_SAIDA))
                 msg = "00"
@@ -149,7 +149,7 @@ class ClientSender(threading.Thread):
         #     tcp.connect((ip, PORTA_SAIDA))
         #     tcp.send(bytes(msg, encoding='utf-8'))
 
-        self.clients.append(ip)
+        self.client.clients.append(ip)
         print("{} inserido no canal".format(ip))
 
     def remove_cliente(self, ip):
@@ -170,6 +170,7 @@ class ClientSender(threading.Thread):
             curr_file_num = curr_video_name.split('.')[0]
 
             # Send the current video number
+            print("Nome do vídeo", curr_video_name)
             sk_client.send(bytes(curr_file_num, encoding='utf-8'))
 
             # Envia o arquivo
