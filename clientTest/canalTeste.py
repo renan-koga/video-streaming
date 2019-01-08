@@ -26,37 +26,35 @@ class ClientServer(threading.Thread):
 
     def run(self):
         logic = True
-        # while True:
-        socketserver.TCPServer.allow_reuse_address = True
-        with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
-            tcp.setsockopt(sk.SOL_SOCKET, sk.SO_REUSEADDR, 1)
+        while True:
+            socketserver.TCPServer.allow_reuse_address = True
+            with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
+                tcp.setsockopt(sk.SOL_SOCKET, sk.SO_REUSEADDR, 1)
 
-            origin = ('', 9095)
-            tcp.bind(origin)
-            # tcp.connect((self.ip, PORTA_SAIDA))
-            tcp.listen(1)
+                origin = ('', 9095)
+                tcp.bind(origin)
+                # tcp.connect((self.ip, PORTA_SAIDA))
+                tcp.listen(1)
 
-            while True:
-                print("Aguardando conexão...")
-                connection, address = tcp.accept()
+                while True:
+                    print("Aguardando conexão...")
+                    connection, address = tcp.accept()
 
-                try:
-                    print("Conectado ", address)
-                    # lock.acquire()
-                    self.client_sender.add_cliente(address[0])
-                    # lock.release()
-                    while True:
-                        msg = connection.recv(BUFFER_SIZE)
-                        print(str(msg, 'utf-8'))
-                        if not msg:
-                            self.client.connected += 1
-                            break
-                        # msg = "teste"
-                        # tcp.send(bytes(msg, encoding='utf-8'))
-                finally:
-                    print("OI")
-                    # tcp.close()
-
+                    try:
+                        print("Conectado ", address)
+                        # lock.acquire()
+                        self.client_sender.add_cliente(address[0])
+                        # lock.release()
+                        while True:
+                            msg = connection.recv(BUFFER_SIZE)
+                            print(str(msg, 'utf-8'))
+                            if not msg:
+                                self.client.connected += 1
+                                break
+                            # msg = "teste"
+                            # tcp.send(bytes(msg, encoding='utf-8'))
+                    except:
+                        print("DEU RUIM")
 
 class HandleConnections(threading.Thread):
     def __init__(self, client):
@@ -64,23 +62,36 @@ class HandleConnections(threading.Thread):
         self.client = client
 
     def run(self):
-        socketserver.TCPServer.allow_reuse_address = True
-        with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
-            origin = ('', 9093)
-            tcp.bind(origin)
-            tcp.listen(1)
+        socketserver.TCPServer.allow_reuse_address =
+        while True:
+            with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
+                origin = ('', 9093)
+                tcp.bind(origin)
+                tcp.listen(1)
 
-            while True:
-                print("Aguardando conexão teste...")
-                connection, address = tcp.accept()
-                print("Aceitado conexão teste")
-                msg = "NO"
+                logic = True
+                while logic:
+                    print("Aguardando conexão teste...")
+                    connection, address = tcp.accept()
+                    print("Aceitado conexão teste")
 
-                if self.client.connected < self.client.maxConnections:
-                    msg = "OK"
+                    code = str(connection.recv(BUFFER_SIZE), encoding='utf-8')
+                    logic = False
 
-                connection.send(bytes(msg, encoding='utf-8'))
+                    if code == "10":
+                        msg = "NO"
 
+                        if self.client.connected < self.client.maxConnections:
+                            msg = "OK"
+
+                        connection.send(bytes(msg, encoding='utf-8'))
+
+                    elif code == "11":
+                        clients_ip = str(self.client.clients)
+                        connection.send(bytes(clients_ip, encoding='utf-8'))
+
+                    else:
+                        connection.send(bytes("INVALID", encoding='utf-8'))
 
 class ClientSender(threading.Thread):
     def __init__(self, client, path):

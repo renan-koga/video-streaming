@@ -248,18 +248,6 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 						clients_ip = str(tcp2.recv(BUFFER_SIZE), 'utf-8')
 						clients_ip = handle_ip_list(clients_ip)
 
-					# client_ip = '191.52.64.32'
-					# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
-					# 	# print("IP TENTANDO CONECTAR: ", ip)
-					# 	tcp3.connect((client_ip, 9093))
-					# 	# tcp3.send(bytes("teste", encoding='utf-8'))
-					# 	resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
-					# 	if resp == "OK":
-					# 		client_ip = ip
-					# 		break
-					#
-					# 	tcp3.close()
-
 					client_ip = None
 					# client_ip = str(client_ip)
 					socketserver.TCPServer.allow_reuse_address = True
@@ -299,21 +287,29 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 					x.start()
 
 					while True:
-						msg = input()
+						code = input()
 
-						if msg == "123":
-							print("IP do cliente emissor: {} \n\n".format(client.sender_ip))
-							print("IPs do(s) cliente(s) que recebem dados deste cliente em analise:")
+						socketserver.TCPServer.allow_reuse_address = True
+						with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
+							tcp2.connect((client_ip, 9093))
+							tcp2.send(bytes(code, encoding='utf-8'))
 
-							if len(client.clients) > 0:
-								for client_receiver in client.clients:
-									print(client_receiver + "\n")
+							if code == "123":
+								print("IP do cliente emissor: {} \n\n".format(client.sender_ip))
+								print("IPs do(s) cliente(s) que recebem dados deste cliente em analise:")
+
+								if len(client.clients) > 0:
+									for client_receiver in client.clients:
+										print(client_receiver + "\n")
+
+								else:
+									print("Nenhum cliente conectado a este")
+
+							elif code == "11":
+								print(str(tcp2.recv(BUFFER_SIZE), 'utf-8'))
 
 							else:
-								print("Nenhum cliente conectado a este")
-						else:
-							print("Comando Invalido!")
-
+								print("Comando Invalido!")
 
 				elif not serverReceiver.is_alive():
 					serverReceiver.start()
@@ -369,24 +365,36 @@ def handle_ip_list(ip_list):
 
 def get_available_client(clients_ip):
 	for ip in clients_ip:
+		print("IP:", ip)
 		if is_available(ip):
 			return ip
 
 	for ip in clients_ip:
-		get_available_client(ip)
+		# print("AAAAAAAAAAAAAAaa")
+		clients_list = get_clients_list(ip)
+		get_available_client(clients_list)
 
 def is_available(ip):
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
 		tcp.connect((ip, 9093))
-		msg = str(tcp.recv(BUFFER_SIZE), 'utf-8')
-		tcp.close()
+		tcp.send(bytes("10", encoding='utf-8'))
+		resp = str(tcp.recv(BUFFER_SIZE), 'utf-8')
 
-		if msg == "OK":
+		if resp == "OK":
 			return True
 
 		else:
 			return False
 
+def get_clients_list(ip):
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
+		tcp.connect((ip, 9093))
+		tcp.send(bytes("11", encoding='utf-8'))
+		resp = str(tcp.recv(BUFFER_SIZE), 'utf-8')
+
+	clients_list = handle_ip_list(resp)
+
+	return clients_list
 
 conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client)
 
