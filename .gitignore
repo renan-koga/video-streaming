@@ -2,6 +2,7 @@
 *.mkv
 *.xml
 *.json
+__pycache__
 .idea/
 .idea/workspace.xml
 venv/*

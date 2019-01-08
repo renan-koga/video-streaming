@@ -366,15 +366,24 @@ def handle_ip_list(ip_list):
 	return ips
 
 def get_available_client(clients_ip):
+	normal = None
 	for ip in clients_ip:
 		print("IP:", ip)
 		if is_available(ip):
-			return ip
+			print("VAMO PORRA")
+			normal = ip
+			break
+
+	if normal is not None:
+		return normal
 
 	for ip in clients_ip:
 		# print("AAAAAAAAAAAAAAaa")
 		clients_list = get_clients_list(ip)
-		get_available_client(clients_list)
+		normal = get_available_client(clients_list)
+
+		if normal is not None:
+			return normal
 
 def is_available(ip):
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
