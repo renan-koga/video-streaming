@@ -5,14 +5,14 @@ import socketserver
 import socket as sk
 import time
 from os import listdir
-from threading import Lock, Thread
+# from threading import Lock, Thread
 
 WAIT_TIME   = 1.8
 BUFFER_SIZE = 1024
 PORTA_SAIDA = 9092
 
 MAX_CLIENTES_CANAL = 1
-lock = Lock()
+# lock = Lock()
 
 class ClientServer(threading.Thread):
     def __init__(self, client, path):
@@ -138,7 +138,7 @@ class ClientSender(threading.Thread):
         
         # Se o canal ultrapassar o limite maximo de pessoas conectadas
         # Envia "00"
-        if len(self.clients) >= MAX_CLIENTES_CANAL:
+        if len(self.client.clients) >= MAX_CLIENTES_CANAL:
             with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
                 tcp.connect((ip, PORTA_SAIDA))
                 msg = "00"
@@ -151,7 +151,7 @@ class ClientSender(threading.Thread):
         #     tcp.connect((ip, PORTA_SAIDA))
         #     tcp.send(bytes(msg, encoding='utf-8'))
 
-        self.clients.append(ip)
+        self.client.clients.append(ip)
         print("{} inserido no canal".format(ip))
 
     def remove_cliente(self, ip):
@@ -172,6 +172,7 @@ class ClientSender(threading.Thread):
             curr_file_num = curr_video_name.split('.')[0]
 
             # Send the current video number
+            print("Nome do vídeo", curr_video_name)
             sk_client.send(bytes(curr_file_num, encoding='utf-8'))
 
             # Envia o arquivo
