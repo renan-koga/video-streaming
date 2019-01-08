@@ -62,9 +62,10 @@ class HandleConnections(threading.Thread):
         self.client = client
 
     def run(self):
-        socketserver.TCPServer.allow_reuse_address =
         while True:
+            socketserver.TCPServer.allow_reuse_address = True
             with sk.socket(sk.AF_INET, sk.SOCK_STREAM) as tcp:
+                tcp.setsockopt(sk.SOL_SOCKET, sk.SO_REUSEADDR, 1)
                 origin = ('', 9093)
                 tcp.bind(origin)
                 tcp.listen(1)
@@ -92,6 +93,8 @@ class HandleConnections(threading.Thread):
 
                     else:
                         connection.send(bytes("INVALID", encoding='utf-8'))
+
+                tcp.shutdown(sk.SHUT_RDWR)
 
 class ClientSender(threading.Thread):
     def __init__(self, client, path):

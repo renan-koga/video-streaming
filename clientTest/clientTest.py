@@ -255,6 +255,7 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 						with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp3:
 							print("IP TENTANDO CONECTAR: ", ip)
 							tcp3.connect((ip, 9093))
+							tcp3.send(bytes("10", encoding='utf-8'))
 							resp = str(tcp3.recv(BUFFER_SIZE), 'utf-8')
 							# print("RESPOSTA: ", resp)
 							if resp == "OK":
@@ -291,6 +292,7 @@ def conecta(TCP_HOST, TCP_PORT, BUFFER_SIZE, dest, msg, client):
 
 						socketserver.TCPServer.allow_reuse_address = True
 						with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp2:
+							print("AAA ---", client_ip)
 							tcp2.connect((client_ip, 9093))
 							tcp2.send(bytes(code, encoding='utf-8'))
 
