@@ -18,9 +18,13 @@ class ClientServer(threading.Thread):
     def __init__(self, client, path):
         threading.Thread.__init__(self)
         self.client = client
+
         self.client_sender = ClientSender(client, path)
+        self.client_sender.daemon = True
         self.client_sender.start()
+
         self.handle_connections = HandleConnections(client)
+        self.handle_connections.daemon = True
         self.handle_connections.start()
         # self.canal = canal
 
@@ -94,7 +98,7 @@ class HandleConnections(threading.Thread):
                     else:
                         connection.send(bytes("INVALID", encoding='utf-8'))
 
-                tcp.shutdown(sk.SHUT_RDWR)
+                # tcp.shutdown(sk.SHUT_RDWR)
 
 class ClientSender(threading.Thread):
     def __init__(self, client, path):
@@ -125,7 +129,7 @@ class ClientSender(threading.Thread):
 
             # Get the current video name
             # lock.acquire()
-            curr_video_name = self.client.get_current_video()
+            # curr_video_name = self.client.get_current_video()
             # lock.release()
 
             # for _, cliente in enumerate(self.clients):
